@@ -3,7 +3,7 @@
 """连接数据库，初始化表."""
 import datetime
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, Enum, DateTime
+from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from conf import settings
@@ -33,20 +33,84 @@ class User(Base):
     register_date = Column(
         DateTime, default=datetime.datetime.now(), nullable=False)
     status = Column(Integer, default=1)
-    update_user = Column(Integer)
+    update_user = Column(Integer, ForeignKey('tf_user.qq'))
     update_time = Column(DateTime, default=datetime.datetime.now())
 
+
+class Role(Base):
+    """角色信息表映射类."""
+
+    __tablename__ = 'tf_role'
+
+    role_code = Column(String(8), primary_key=True)
+    role_name = Column(String(32), nullable=False)
+    update_time = Column(
+        DateTime, default=datetime.datetime.now(), nullable=False)
+    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+
+
+class Right(Base):
+    """权限信息表映射."""
+
+    __tablename__ = 'tf_right'
+
+    right_code = Column(String(8), primary_key=True)
+    right_name = Column(String(32), nullable=False)
+    update_time = Column(DateTime, default=datetime.datetime.now())
+    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+
+
+class RoleRight(Base):
+    """角色与权限关系表."""
+
+    __tablename__ = 'tr_role_right'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    role_code = Column(String(8), ForeignKey(
+        'tf_role.role_code'), nullable=False)
+    right_code = Column(String(8), ForeignKey(
+        'tf_right.right_code'), nullable=False)
+    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_time = Column(
+        DateTime, default=datetime.datetime.now(), nullable=False)
+
+
+class UserRightORRole(Base):
+    """用户权限关系表."""
+
+    __tablename__ = 'tr_user_roleorright'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    userid = Column(Integer, ForeignKey('tf_user.qq'), nullable=False)
+    right = Column(String(8), nullable=False)
+    right_type = Column(Enum('1', '2'), nullable=False)
+    update_time = Column(DateTime, default=datetime.datetime.now())
+    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+
+
+class UserLoginLog(Base):
+    """用户登录日志表."""
+
+    __tablename__ = 'tl_login_log'
+
+    log_id = Column(Integer, primary_key=True, autoincrement=True)
+    userid = Column(Integer, ForeignKey('tf_user.qq'))
+    login_time = Column(DateTime, default=datetime.datetime.now())
+
+
+class Courses(Base):
+    """"""
 
 Base.metadata.create_all(engine)
 
 session = DBSession()
 
-user1 = User(
-    qq=910709054,
-    name='zhangyy',
-    age=30,
-    update_user=910709054,
-)
+# user1 = User(
+#     qq=910709054,
+#     name='zhangyy',
+#     age=30,
+#     update_user=910709054,
+# )
 
-session.add(user1)
+# session.add(user1)
 session.commit()

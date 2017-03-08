@@ -1,0 +1,42 @@
+tf_user
+qq(primary), name, sex, age, status, register_time(默认值当前时间), update_time（默认值当前时间）,update_user
+
+tf_role
+role_code(primary), role_name, update_time（默认值当前时间）,update_user
+
+tf_right
+right_code(primary), right_name, update_time（默认值当前时间）,update_user
+
+tr_role_right
+role_code, right_code, update_user,update_time（默认值当前时间）
+
+tr_user_role_or_right
+id, qq, right, right_type(nullable=False,1-权限，2-角色), update_time（默认值当前时间）,update_user
+
+
+tl_login_log
+login_id, userid(qq号), login_time(default=sysdata)
+
+
+==============================================================================================================
+tl_operate_log
+log_id, oper_user, oper_time, oper_type
+
+
+
+tf_school
+id, name,location,create_date,update_time（默认值当前时间）
+
+tf_courses
+id, name, create_date,update_time（默认值当前时间）
+
+tf_timetable课程表
+id, course_id, schedule(进度), content(内容),create_user,cupdate_time（默认值当前时间）,update_time（默认值当前时间）,update_user
+
+tf_classes
+id, name, course_id(外键到course), create_date,update_time（默认值当前时间）,create_user, update_user
+
+tr_user_classrecord
+id,userid,
+
+
