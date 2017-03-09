@@ -10,7 +10,7 @@ from conf import settings
 
 
 # 初始化数据库连接
-engine = create_engine(settings.database[settings.engine])
+engine = create_engine(settings.database[settings.engine], encoding='utf-8')
 
 # 创建映射表的基类
 Base = declarative_base()
@@ -148,18 +148,35 @@ class Classes(Base):
     create_user = Column(Integer, ForeignKey('tf_user.qq'))
     create_date = Column(DateTime, default=datetime.datetime.now())
     update_user = Column(Integer, ForeignKey('tf_user.qq'))
-    update_time =
+    update_time = Column(DateTime, default=datetime.datetime.now())
 
+
+class UserClassRef(Base):
+    """用户班级关系表."""
+
+    __tablename__ = 'tr_user_class'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    userid = Column(Integer, ForeignKey('tf_user.qq'))
+    class_id = Column(Integer, ForeignKey('tf_classes.id'))
+    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_time = Column(DateTime, default=datetime.datetime.now())
+
+
+class StudyRecord(Base):
+    """学生上课记录表."""
+
+    __tablename__ = 'tr_study_record'
+
+    status_info = {1: "正常", 2: "迟到", 0: "缺勤"}
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    stuid = Column(Integer, ForeignKey('tf_user.qq'))
+    timetable_id = Column(Integer, ForeignKey('tf_timetable,id'))
+    status = Column(Integer, nullable=False)
+
+
+# 创建所有定义好的表
 Base.metadata.create_all(engine)
-
 session = DBSession()
-
-# user1 = User(
-#     qq=910709054,
-#     name='zhangyy',
-#     age=30,
-#     update_user=910709054,
-# )
-
-# session.add(user1)
 session.commit()
