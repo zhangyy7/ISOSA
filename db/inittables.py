@@ -5,7 +5,7 @@ import datetime
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from conf import settings
 
 
@@ -98,8 +98,57 @@ class UserLoginLog(Base):
     login_time = Column(DateTime, default=datetime.datetime.now())
 
 
+class School(Base):
+    """学校信息表."""
+
+    __tablename__ = 'tf_school'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(64), nullable=False)
+    create_date = Column(DateTime, default=datetime.datetime.now())
+    update_time = Column(DateTime, default=datetime.datetime.now())
+
+
 class Courses(Base):
-    """"""
+    """课程信息表."""
+
+    __tablename__ = 'tf_courses'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(64), nullable=False)
+    create_date = Column(DateTime, default=datetime.datetime.now())
+    update_time = Column(DateTime, default=datetime.datetime.now())
+
+    timetable = relationship('TimeTable')
+
+
+class TimeTable(Base):
+    """课程表信息表."""
+
+    __tablename__ = 'tf_timetable'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    course_id = Column(Integer, ForeignKey('tf_courses.id'))
+    schedule = Column(String(32), nullable=False)
+    content = Column(String(128), nullable=False)
+    create_user = Column(Integer, ForeignKey('tf_user.qq'))
+    create_date = Column(DateTime, default=datetime.datetime.now())
+    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_time = Column(DateTime, default=datetime.datetime.now())
+
+
+class Classes(Base):
+    """班级信息表."""
+
+    __tablename__ = 'tf_classes'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(64), nullable=False)
+    course_id = Column(Integer, ForeignKey('tf_courses.id'))
+    create_user = Column(Integer, ForeignKey('tf_user.qq'))
+    create_date = Column(DateTime, default=datetime.datetime.now())
+    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_time =
 
 Base.metadata.create_all(engine)
 
