@@ -172,7 +172,7 @@ class StudyRecord(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     stuid = Column(Integer, ForeignKey('tf_user.qq'))
-    timetable_id = Column(Integer, ForeignKey('tf_timetable,id'))
+    timetable_id = Column(Integer, ForeignKey('tf_timetable.id'))
     status = Column(Integer, nullable=False)
 
 
