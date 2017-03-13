@@ -3,9 +3,9 @@
 """连接数据库，初始化表."""
 import datetime
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey, Table
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, backref
 from conf import settings
 
 
@@ -21,88 +21,50 @@ DBSession = sessionmaker(bind=engine)
 # 创建映射到数据库表的映射类
 
 
-class UserRightRef(Base):
-    """用户权限关系表."""
-
-    __tablename__ = 'tr_user_right'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    userid = Column(Integer, ForeignKey('tf_user.qq'), nullable=False)
-    right_code = Column(String(8), ForeignKey('tf_right.right_code'))
-    update_time = Column(DateTime, default=datetime.datetime.now())
-    update_user = Column(Integer)
+# 用户权限关系表
+user_right_ref = Table(
+    'tr_user_right', Base.metadata,
+    Column('user_id', Integer, ForeignKey('tf_user.qq')),
+    Column('right_code', String(8), ForeignKey('tf_right.right_code')),
+    Column('updata_time', DateTime, default=datetime.datetime.now())
+)
 
 
-class UserRoleRef(Base):
-    """用户角色关系表."""
-
-    __tablename__ = 'tr_user_role'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    userid = Column(Integer, ForeignKey('tf_user.qq'), nullable=False)
-    role_code = Column(String(8), ForeignKey('tf_role.role_code'))
-    update_time = Column(DateTime, default=datetime.datetime.now())
-    update_user = Column(Integer)
+# 用户角色关系表
+user_role_ref = Table(
+    'tr_user_role', Base.metadata,
+    Column('user_id', Integer, ForeignKey('tf_user.qq')),
+    Column('role_code', String(8), ForeignKey('tf_role.role_code')),
+    Column('updata_time', DateTime, default=datetime.datetime.now())
+)
 
 
-class RoleRightRef(Base):
-    """角色与权限关系表."""
-
-    __tablename__ = 'tr_role_right'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    role_code = Column(String(8), ForeignKey(
-        'tf_role.role_code'), nullable=False)
-    right_code = Column(String(8), ForeignKey(
-        'tf_right.right_code'), nullable=False)
-    update_user = Column(Integer)
-    update_time = Column(
-        DateTime, default=datetime.datetime.now(), nullable=False)
+# 角色与权限关系表
+role_right_ref = Table(
+    'tr_role_right', Base.metadata,
+    Column('role_code', String(8), ForeignKey('tf_role.role_code')),
+    Column('right_code', String(8), ForeignKey('tf_right.right_code')),
+    Column('updata_time', DateTime, default=datetime.datetime.now())
+)
 
 
-class User(Base):
-    """用户信息类."""
-
-    __tablename__ = 'tf_user'
-
-    qq = Column(Integer, primary_key=True)
-    name = Column(String(32), nullable=False)
-    sex = Column(Enum('M', 'F'), default='M', nullable=False)
-    age = Column(Integer, nullable=False)
-    register_date = Column(
-        DateTime, default=datetime.datetime.now(), nullable=False)
-    status = Column(Integer, default=1)
-    update_user = Column(Integer)
-    update_time = Column(DateTime, default=datetime.datetime.now())
-
-    roles = relationship('Role', secondary=UserRoleRef, backref='users')
-    rights = relationship('Right', secondary=UserRightRef, backref='users')
-    study_records = relationship('StudyRecord', backref='users')
+# 用户上课记录表
+study_record_ref = Table(
+    'tf_study_record', Base.metadata,
+    Column('user_id', Integer, ForeignKey('tf_user.qq')),
+    Column('timetable_id', Integer, ForeignKey('tf_timetable.id')),
+    Column('status', Integer, default=1),
+    Column('updata_time', DateTime, default=datetime.datetime.now())
+)
 
 
-class Role(Base):
-    """角色信息表映射类."""
-
-    __tablename__ = 'tf_role'
-
-    role_code = Column(String(8), primary_key=True)
-    role_name = Column(String(32), nullable=False)
-    update_time = Column(
-        DateTime, default=datetime.datetime.now(), nullable=False)
-    update_user = Column(Integer)
-
-
-class Right(Base):
-    """权限信息表映射."""
-
-    __tablename__ = 'tf_right'
-
-    right_code = Column(String(8), primary_key=True)
-    right_name = Column(String(32), nullable=False)
-    update_time = Column(DateTime, default=datetime.datetime.now())
-    update_user = Column(Integer)
-
-    roles = relationship('Role', secondary=RoleRightRef, backref='rights')
+# 用户班级关系表
+user_class_ref = Table(
+    'tr_user_class', Base.metadata,
+    Column('user_id', Integer, ForeignKey('tf_user.qq')),
+    Column('class_id', Integer, ForeignKey('tf_classes.id')),
+    Column('updata_time', DateTime, default=datetime.datetime.now())
+)
 
 
 class UserLoginLog(Base):
@@ -114,7 +76,56 @@ class UserLoginLog(Base):
     userid = Column(Integer, ForeignKey('tf_user.qq'))
     login_time = Column(DateTime, default=datetime.datetime.now())
 
-    users = relationship('User', foreign_keys=[userid], backref='login_logs')
+
+class User(Base):
+    """用户信息类."""
+
+    __tablename__ = 'tf_user'
+
+    qq = Column(Integer, primary_key=True)
+    name = Column(String(32), nullable=False)
+    sex = Column(Enum('M', 'F'), default='M')
+    age = Column(Integer, nullable=False)
+    register_date = Column(DateTime, default=datetime.datetime.now())
+    status = Column(Integer, default=1)
+    create_user = Column(Integer)
+    create_date = Column(DateTime, default=datetime.datetime.now())
+    update_user = Column(Integer)
+    update_time = Column(DateTime, default=datetime.datetime.now())
+
+    roles = relationship('Role', secondary=user_role_ref,
+                         backref=backref('users'))
+    rights = relationship('Right', secondary=user_right_ref,
+                          backref=backref('users'))
+
+
+class Role(Base):
+    """角色信息表映射类."""
+
+    __tablename__ = 'tf_role'
+
+    role_code = Column(String(8), primary_key=True)
+    role_name = Column(String(32), nullable=False)
+    create_user = Column(Integer)
+    create_date = Column(DateTime, default=datetime.datetime.now())
+    update_user = Column(Integer)
+    update_time = Column(DateTime, default=datetime.datetime.now())
+
+    rights = relationship('Right', secondary=role_right_ref,
+                          backref=backref('roles'))
+
+
+class Right(Base):
+    """权限信息表映射."""
+
+    __tablename__ = 'tf_right'
+
+    right_code = Column(String(8), primary_key=True)
+    right_name = Column(String(32), nullable=False)
+    create_user = Column(Integer)
+    create_date = Column(DateTime, default=datetime.datetime.now())
+    update_user = Column(Integer)
+    update_time = Column(DateTime, default=datetime.datetime.now())
 
 
 class School(Base):
@@ -124,7 +135,9 @@ class School(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(64), nullable=False)
+    create_user = Column(Integer)
     create_date = Column(DateTime, default=datetime.datetime.now())
+    update_user = Column(Integer)
     update_time = Column(DateTime, default=datetime.datetime.now())
 
 
@@ -135,10 +148,10 @@ class Courses(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(64), nullable=False)
+    create_user = Column(Integer)
     create_date = Column(DateTime, default=datetime.datetime.now())
+    update_user = Column(Integer)
     update_time = Column(DateTime, default=datetime.datetime.now())
-
-    timetable = relationship('TimeTable')
 
 
 class TimeTable(Base):
@@ -150,10 +163,16 @@ class TimeTable(Base):
     course_id = Column(Integer, ForeignKey('tf_courses.id'))
     schedule = Column(String(32), nullable=False)
     content = Column(String(128), nullable=False)
-    create_user = Column(Integer, ForeignKey('tf_user.qq'))
+    create_user = Column(Integer)
     create_date = Column(DateTime, default=datetime.datetime.now())
     update_user = Column(Integer)
     update_time = Column(DateTime, default=datetime.datetime.now())
+
+    courses = relationship(
+        'Courses',
+        foreign_keys=[course_id],
+        backref=backref('timetables')
+    )
 
 
 class Classes(Base):
@@ -164,35 +183,13 @@ class Classes(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(64), nullable=False)
     course_id = Column(Integer, ForeignKey('tf_courses.id'))
-    create_user = Column(Integer, ForeignKey('tf_user.qq'))
+    create_user = Column(Integer)
     create_date = Column(DateTime, default=datetime.datetime.now())
     update_user = Column(Integer)
     update_time = Column(DateTime, default=datetime.datetime.now())
 
-
-class UserClassRef(Base):
-    """用户班级关系表."""
-
-    __tablename__ = 'tr_user_class'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    userid = Column(Integer, ForeignKey('tf_user.qq'))
-    class_id = Column(Integer, ForeignKey('tf_classes.id'))
-    update_user = Column(Integer)
-    update_time = Column(DateTime, default=datetime.datetime.now())
-
-
-class StudyRecord(Base):
-    """学生上课记录表."""
-
-    __tablename__ = 'tr_study_record'
-
-    status_info = {1: "正常", 2: "迟到", 0: "缺勤"}
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    stuid = Column(Integer, ForeignKey('tf_user.qq'))
-    timetable_id = Column(Integer, ForeignKey('tf_timetable.id'))
-    status = Column(Integer, nullable=False)
+    courses = relationship('Courses', foreign_keys=[
+                           course_id], backref=backref('classes'))
 
 
 # 创建所有定义好的表
