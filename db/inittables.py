@@ -30,7 +30,7 @@ class UserRightRef(Base):
     userid = Column(Integer, ForeignKey('tf_user.qq'), nullable=False)
     right_code = Column(String(8), ForeignKey('tf_right.right_code'))
     update_time = Column(DateTime, default=datetime.datetime.now())
-    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_user = Column(Integer)
 
 
 class UserRoleRef(Base):
@@ -42,7 +42,7 @@ class UserRoleRef(Base):
     userid = Column(Integer, ForeignKey('tf_user.qq'), nullable=False)
     role_code = Column(String(8), ForeignKey('tf_role.role_code'))
     update_time = Column(DateTime, default=datetime.datetime.now())
-    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_user = Column(Integer)
 
 
 class RoleRightRef(Base):
@@ -55,7 +55,7 @@ class RoleRightRef(Base):
         'tf_role.role_code'), nullable=False)
     right_code = Column(String(8), ForeignKey(
         'tf_right.right_code'), nullable=False)
-    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_user = Column(Integer)
     update_time = Column(
         DateTime, default=datetime.datetime.now(), nullable=False)
 
@@ -72,11 +72,12 @@ class User(Base):
     register_date = Column(
         DateTime, default=datetime.datetime.now(), nullable=False)
     status = Column(Integer, default=1)
-    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_user = Column(Integer)
     update_time = Column(DateTime, default=datetime.datetime.now())
 
     roles = relationship('Role', secondary=UserRoleRef, backref='users')
     rights = relationship('Right', secondary=UserRightRef, backref='users')
+    study_records = relationship('StudyRecord', backref='users')
 
 
 class Role(Base):
@@ -88,7 +89,7 @@ class Role(Base):
     role_name = Column(String(32), nullable=False)
     update_time = Column(
         DateTime, default=datetime.datetime.now(), nullable=False)
-    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_user = Column(Integer)
 
 
 class Right(Base):
@@ -99,7 +100,7 @@ class Right(Base):
     right_code = Column(String(8), primary_key=True)
     right_name = Column(String(32), nullable=False)
     update_time = Column(DateTime, default=datetime.datetime.now())
-    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_user = Column(Integer)
 
     roles = relationship('Role', secondary=RoleRightRef, backref='rights')
 
@@ -151,7 +152,7 @@ class TimeTable(Base):
     content = Column(String(128), nullable=False)
     create_user = Column(Integer, ForeignKey('tf_user.qq'))
     create_date = Column(DateTime, default=datetime.datetime.now())
-    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_user = Column(Integer)
     update_time = Column(DateTime, default=datetime.datetime.now())
 
 
@@ -165,7 +166,7 @@ class Classes(Base):
     course_id = Column(Integer, ForeignKey('tf_courses.id'))
     create_user = Column(Integer, ForeignKey('tf_user.qq'))
     create_date = Column(DateTime, default=datetime.datetime.now())
-    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_user = Column(Integer)
     update_time = Column(DateTime, default=datetime.datetime.now())
 
 
@@ -177,7 +178,7 @@ class UserClassRef(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     userid = Column(Integer, ForeignKey('tf_user.qq'))
     class_id = Column(Integer, ForeignKey('tf_classes.id'))
-    update_user = Column(Integer, ForeignKey('tf_user.qq'))
+    update_user = Column(Integer)
     update_time = Column(DateTime, default=datetime.datetime.now())
 
 
