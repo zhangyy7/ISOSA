@@ -3,7 +3,6 @@
 """业务逻辑."""
 
 from db import inittables
-from db.inittables import sessionmaker, engine
 
 
 class BaseUser(object):
@@ -11,7 +10,7 @@ class BaseUser(object):
 
     def __init__(self):
         """初始化所需参数."""
-        self.session = sessionmaker(bind=engine)
+        self.session = inittables.DBSession()
         self.user_info = {"islogin": False, "current_user": None}
 
     def login(self, user, password):
@@ -26,7 +25,17 @@ class BaseUser(object):
         else:
             return {"islogin": False}
 
-    def register(self, userid, password):
+    def register(self, userid, name, password, sex, age):
+        """用户注册方法."""
+        userinfo = inittables.User(
+            qq=userid,
+            name=name,
+            password=password,
+            sex=sex,
+            age=age,
+        )
+        self.session.add(userinfo)
+        self.session.commit()
 
 
 class Student(object):

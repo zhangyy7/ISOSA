@@ -86,7 +86,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     qq = Column(Integer, unique=True)
     name = Column(String(32), nullable=False)
-    password = Column(s)
+    password = Column(String(64), nullable=False)
     sex = Column(Enum('M', 'F'), server_default='M')
     age = Column(Integer, nullable=False)
     register_date = Column(DateTime, server_default=func.now())
