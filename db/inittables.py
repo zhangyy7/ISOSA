@@ -89,6 +89,7 @@ class User(Base):
     password = Column(String(64), nullable=False)
     sex = Column(Enum('M', 'F'), server_default='M')
     age = Column(Integer, nullable=False)
+    employment = Column(Enum('s', 't'), nullable=False)
     register_date = Column(DateTime, server_default=func.now())
     status = Column(String(1), server_default='1')
     create_user = Column(Integer)

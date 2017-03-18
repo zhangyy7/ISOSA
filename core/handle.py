@@ -25,7 +25,7 @@ class BaseUser(object):
         else:
             return {"islogin": False}
 
-    def register(self, userid, name, password, sex, age):
+    def register(self, userid, name, password, sex, age, employment):
         """用户注册方法."""
         userinfo = inittables.User(
             qq=userid,
@@ -33,11 +33,39 @@ class BaseUser(object):
             password=password,
             sex=sex,
             age=age,
+            employment=employment
         )
         self.session.add(userinfo)
-        self.session.commit()
+        self.session.commit()\
 
 
-class Student(object):
-    """学生"""
-    pass
+    def query_courses(self):
+        """查询课程."""
+        pass
+
+    def query_classes(self):
+        """查询班级."""
+        pass
+
+
+class Student(BaseUser):
+    """学生类."""
+
+    def enroll(self):
+        """报名方法."""
+        pass
+
+    def submit_homework(self):
+        """交作业方法."""
+        pass
+
+    def query_score(self):
+        """查询成绩方法."""
+        pass
+
+    def pay_tuition(self):
+        """交学费方法."""
+
+
+class Teacher(BaseUser):
+    """讲师类."""
