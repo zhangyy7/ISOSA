@@ -1,7 +1,8 @@
 #! /usr/bin/env python
 # -*- coding:utf-8 -*-
 """业务逻辑."""
-
+import getpass
+import hashlib
 from db import inittables
 
 
@@ -12,6 +13,15 @@ class BaseUser(object):
         """初始化所需参数."""
         self.session = inittables.DBSession()
         self.user_info = {"islogin": False, "current_user": None}
+
+    def login_api(self):
+        """获取用户参数，调用login方法."""
+        userid = input('请输入qq号码：>>>').strip()
+        password = getpass.getpass('请输入密码：>>>').strip()
+        md5 = hashlib.md5()
+        md5.update(password.encode('utf-8'))
+        md5_pwd = md5.hexdigest()
+        self.login(user=userid, password=md5_pwd)
 
     def login(self, user, password):
         """用户登录方法."""
@@ -36,24 +46,37 @@ class BaseUser(object):
             employment=employment
         )
         self.session.add(userinfo)
-        self.session.commit()\
-
+        self.session.commit()
 
     def query_courses(self):
         """查询课程."""
-        pass
+        courses = self.session.query(inittables.Courses).all()
+        return courses
 
     def query_classes(self):
         """查询班级."""
         pass
 
+    def auth(self, func):
+        """登录认证方法."""
+        def decorator(*args, **kwargs):
+            if not self.user_info.get('islogin'):
+                self.login_api()
+            return func(*args, **kwargs)
+        return decorator
+
 
 class Student(BaseUser):
     """学生类."""
 
-    def enroll(self):
+    @self.auth
+    def enroll(self, course_id):
         """报名方法."""
-        pass
+        apply_info = inittables.Apply(
+            student_id=self.user_info["current_user"].qq,
+            apply_course_id=course_id
+        )
+        self.session.add(apply_info)
 
     def submit_homework(self):
         """交作业方法."""

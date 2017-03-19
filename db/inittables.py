@@ -78,6 +78,19 @@ class UserLoginLog(Base):
     login_time = Column(DateTime, server_default=func.now())
 
 
+class Apply(Base):
+    """学生报名申请表."""
+
+    __tablename__ = 'tr_student_apply'
+
+    id = Column(Integer, primary_key=True)
+    student_id = Column(Integer, ForeignKey('tf_user.qq'))
+    apply_course_id = Column(Integer, ForeignKey('tf_courses.id'))
+    apply_date = Column(DateTime, server_default=func.now())
+    users = relationship('User', foreign_keys=[
+                         student_id], backref=backref('applys'))
+
+
 class User(Base):
     """用户信息类."""
 
