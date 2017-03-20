@@ -88,7 +88,7 @@ class BaseUser(object):
         """登录认证方法."""
         def decorator(*args, **kwargs):
             if not cls.user_info.get('islogin'):
-                cls.login_api()
+                cls.login()
             return func(*args, **kwargs)
         return decorator
 
@@ -137,11 +137,15 @@ class ObjFactory(object):
 
     def __init__(self, employment):
         """根据职业创建对象."""
-        if employment == 's':
+        self.employment = employment
+
+    def factory(self):
+        """根据职业创建对象."""
+        if self.employment == 's':
             return Student()
-        elif employment == 't':
+        elif self.employment == 't':
             return Teacher()
-        elif employment == 'a':
+        elif self.employment == 'a':
             return Administrator()
         else:
-            raise ValueError('职业选择不正确！')
+            raise ValueError('职业不正确！')

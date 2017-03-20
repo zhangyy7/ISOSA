@@ -1,4 +1,5 @@
 from core import handle
 
-handler = handle.BaseUser()
+factory = handle.ObjFactory('s')
+handler = factory.factory()
 handler.register()
