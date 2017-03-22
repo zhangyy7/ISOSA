@@ -9,10 +9,11 @@ from db import inittables
 class BaseUser(object):
     """用户基础功能."""
 
+    user_info = {"islogin": False, "current_user": None}
+
     def __init__(self):
         """初始化所需参数."""
         self.session = inittables.DBSession()
-        self.user_info = {"islogin": False, "current_user": None}
 
     def login(self):
         """获取用户参数，调用login方法."""
