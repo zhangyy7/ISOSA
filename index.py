@@ -2,4 +2,5 @@ from core import handle
 
 factory = handle.ObjFactory('s')
 handler = factory.factory()
-handler.register()
+
+handler.enroll(1)

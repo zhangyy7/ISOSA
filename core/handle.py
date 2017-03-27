@@ -9,14 +9,14 @@ from db import inittables
 class BaseUser(object):
     """用户基础功能."""
 
-    user_info = {"islogin": False, "current_user": None}
-
     def __init__(self):
         """初始化所需参数."""
         self.session = inittables.DBSession()
+        self.user_info = {"islogin": False, "current_user": None}
 
     def login(self):
         """获取用户参数，调用login方法."""
+        print("调用登录方法")
         userid = input('请输入qq号码：>>>').strip()
         password = getpass.getpass('请输入密码：>>>').strip()
         md5 = hashlib.md5()
@@ -27,7 +27,7 @@ class BaseUser(object):
     def _login(self, user, password):
         """用户登录方法."""
         user_info = self.session.query(
-            inittables.User).filter(inittables.User.qq == user).all()
+            inittables.User).filter(inittables.User.qq == user).first()
         real_user, real_password = user_info.qq, user_info.password
         if user == real_user and password == real_password:
             self.user_info["current_user"] = user
@@ -84,20 +84,31 @@ class BaseUser(object):
         """查询班级."""
         pass
 
-    @classmethod
-    def auth(cls, func):
+    @staticmethod
+    def auth(func):
         """登录认证方法."""
-        def decorator(*args, **kwargs):
-            if not cls.user_info.get('islogin'):
-                cls.login()
-            return func(*args, **kwargs)
+
+        def decorator(self, *args, **kwargs):
+            if not self.user_info.get('islogin'):
+                self.login()
+            return func(self, *args, **kwargs)
         return decorator
 
 
 class Student(BaseUser):
     """学生类."""
 
-    @BaseUser.auth
+    @staticmethod
+    def auth(func):
+        """登录认证方法."""
+
+        def decorator(self, *args, **kwargs):
+            if not self.user_info.get('islogin'):
+                self.login()
+            return func(self, *args, **kwargs)
+        return decorator
+
+    @auth
     def enroll(self, course_id):
         """报名方法."""
         apply_info = inittables.Apply(
@@ -130,7 +141,12 @@ class Teacher(BaseUser):
 class Administrator(BaseUser):
     """管理员类."""
 
-    pass
+    def create_course(self, name):
+        course_obj = inittables.Courses(
+            name=name
+        )
+        self.session.add(course_obj)
+        self.session.commit()
 
 
 class ObjFactory(object):
