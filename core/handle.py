@@ -6,35 +6,57 @@ import hashlib
 from db import inittables
 
 
+class Util(object):
+    """工具类."""
+
+    @staticmethod
+    def auth(func):
+        """登录认证方法."""
+
+        def decorator(self, *args, **kwargs):
+            """装饰器方法."""
+            if not self.user_info:
+                self.login()
+            return func(self, *args, **kwargs)
+        return decorator
+
+
 class BaseUser(object):
     """用户基础功能."""
 
     def __init__(self):
         """初始化所需参数."""
         self.session = inittables.DBSession()
-        self.user_info = {"islogin": False, "current_user": None}
+        self.user_info = {}
 
     def login(self):
         """获取用户参数，调用login方法."""
-        print("调用登录方法")
-        userid = input('请输入qq号码：>>>').strip()
-        password = getpass.getpass('请输入密码：>>>').strip()
-        md5 = hashlib.md5()
-        md5.update(password.encode('utf-8'))
-        md5_pwd = md5.hexdigest()
-        self._login(user=userid, password=md5_pwd)
+        count = 0
+        while not self.user_info and count < 3:
+            print("调用登录方法")
+            userid = input('请输入qq号码：>>>').strip()
+            password = getpass.getpass('请输入密码：>>>').strip()
+            md5 = hashlib.md5()
+            md5.update(password.encode('utf-8'))
+            md5_pwd = md5.hexdigest()
+            self._login(user=userid, password=md5_pwd)
+            count += 1
+        else:
+            exit(1)
 
     def _login(self, user, password):
         """用户登录方法."""
         user_info = self.session.query(
             inittables.User).filter(inittables.User.qq == user).first()
-        real_user, real_password = user_info.qq, user_info.password
-        if user == real_user and password == real_password:
-            self.user_info["current_user"] = user
-            self.user_info["islogin"] = True
-            return {"islogin": True, "user_info": user_info}
+        if user_info:
+            real_user, real_password = user_info.qq, user_info.password
+            if user == str(real_user) and password == real_password:
+                self.user_info["current_user"] = user
+                self.user_info["islogin"] = True
+            else:
+                print("账号或密码不正确！")
         else:
-            return {"islogin": False}
+            print("账号或密码不正确！")
 
     def _register(self, userid, name, password, sex, age, employment):
         """用户注册方法."""
@@ -84,31 +106,11 @@ class BaseUser(object):
         """查询班级."""
         pass
 
-    @staticmethod
-    def auth(func):
-        """登录认证方法."""
-
-        def decorator(self, *args, **kwargs):
-            if not self.user_info.get('islogin'):
-                self.login()
-            return func(self, *args, **kwargs)
-        return decorator
-
 
 class Student(BaseUser):
     """学生类."""
 
-    @staticmethod
-    def auth(func):
-        """登录认证方法."""
-
-        def decorator(self, *args, **kwargs):
-            if not self.user_info.get('islogin'):
-                self.login()
-            return func(self, *args, **kwargs)
-        return decorator
-
-    @auth
+    @Util.auth
     def enroll(self, course_id):
         """报名方法."""
         apply_info = inittables.Apply(
@@ -117,19 +119,20 @@ class Student(BaseUser):
         )
         self.session.add(apply_info)
 
-    @BaseUser.auth
+    @Util.auth
     def submit_homework(self):
         """交作业方法."""
         print("交作业")
 
-    @BaseUser.auth
+    @Util.auth
     def query_score(self):
         """查询成绩方法."""
         pass
 
-    @BaseUser.auth
+    @Util.auth
     def pay_tuition(self):
         """交学费方法."""
+        pass
 
 
 class Teacher(BaseUser):
@@ -142,6 +145,7 @@ class Administrator(BaseUser):
     """管理员类."""
 
     def create_course(self, name):
+        """创建课程方法."""
         course_obj = inittables.Courses(
             name=name
         )
