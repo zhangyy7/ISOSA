@@ -104,7 +104,8 @@ class BaseUser(object):
 
     def query_classes(self):
         """查询班级."""
-        pass
+        classes = self.session.query(inittables.Classes).all()
+        return classes
 
 
 class Student(BaseUser):
@@ -150,6 +151,17 @@ class Administrator(BaseUser):
             name=name
         )
         self.session.add(course_obj)
+        self.session.commit()
+
+    def create_classes(self, name, course_name):
+        """创建班级."""
+        course_id = self.session.query(inittables.Courses).filter(
+            inittables.Courses.name == course_name)
+        classobj = inittables.Classes(
+            name=name,
+            course_id=course_id
+        )
+        self.session.add(classobj)
         self.session.commit()
 
 
