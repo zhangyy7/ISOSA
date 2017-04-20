@@ -139,7 +139,29 @@ class Student(BaseUser):
 class Teacher(BaseUser):
     """讲师类."""
 
-    pass
+    def create_classes(self, name, course_name):
+        """创建班级."""
+        course_id = self.session.query(inittables.Courses).filter(
+            inittables.Courses.name == course_name)
+        classobj = inittables.Classes(
+            name=name,
+            course_id=course_id
+        )
+        self.session.add(classobj)
+        self.session.commit()
+
+    def add_student(self):
+        """根据学生QQ号把学生加入班级."""
+        record = self._query_apply()
+        return record
+
+    def _query_apply(self):
+        """查询报名申请记录."""
+        pass
+
+    def all_approve(self, *qq):
+        """全部审批通过."""
+        pass
 
 
 class Administrator(BaseUser):
@@ -151,17 +173,6 @@ class Administrator(BaseUser):
             name=name
         )
         self.session.add(course_obj)
-        self.session.commit()
-
-    def create_classes(self, name, course_name):
-        """创建班级."""
-        course_id = self.session.query(inittables.Courses).filter(
-            inittables.Courses.name == course_name)
-        classobj = inittables.Classes(
-            name=name,
-            course_id=course_id
-        )
-        self.session.add(classobj)
         self.session.commit()
 
 
