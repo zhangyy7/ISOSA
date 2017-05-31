@@ -87,6 +87,7 @@ class Apply(Base):
     student_id = Column(Integer, ForeignKey('tf_user.qq'))
     apply_course_id = Column(Integer, ForeignKey('tf_courses.id'))
     apply_date = Column(DateTime, server_default=func.now())
+    pay_tag = Column(Enum('0', '1'), server_default='0')
     users = relationship('User', foreign_keys=[
                          student_id], backref=backref('applys'))
 

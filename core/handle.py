@@ -135,6 +135,14 @@ class Student(BaseUser):
         """交学费方法."""
         pass
 
+    @Util.auth
+    def query_self_apply_status(self):
+        """查询自己的申请状态."""
+        qq = self.user_info['current_user'].qq
+        apply_record = self.session.query(inittables.Apply).filter(
+            inittables.Apply.student_id == qq).first()
+        return apply_record
+
 
 class Teacher(BaseUser):
     """讲师类."""
@@ -142,7 +150,7 @@ class Teacher(BaseUser):
     def create_classes(self, name, course_name):
         """创建班级."""
         course_id = self.session.query(inittables.Courses).filter(
-            inittables.Courses.name == course_name)
+            inittables.Courses.name == course_name).first()
         classobj = inittables.Classes(
             name=name,
             course_id=course_id
@@ -162,6 +170,12 @@ class Teacher(BaseUser):
     def all_approve(self, *qq):
         """全部审批通过."""
         pass
+
+    def create_classrecord(self, course_id):
+        """创建指定班级的上课记录."""
+
+        # 根据班级ID查询出所有学员
+        self.session.query(inittables.user_class_ref)
 
 
 class Administrator(BaseUser):
