@@ -173,7 +173,6 @@ class Teacher(BaseUser):
 
     def create_classrecord(self, course_id):
         """创建指定班级的上课记录."""
-
         # 根据班级ID查询出所有学员
         self.session.query(inittables.user_class_ref)
 
