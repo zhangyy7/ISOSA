@@ -68,6 +68,21 @@ user_class_ref = Table(
 )
 
 
+class Tf_Scholl(Base):
+    """学校信息表."""
+
+    __tablename__ = "tl_school"
+    __table_args__ = {
+        "mysql_engine": "InnoDB",
+        "mysql_charset": "utf8"
+    }
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    name = Column("name", String(32), nullable=False)
+    local_state = Column("local_state", String(128), nullable=False)
+    headmaster_id = Column("headmaster", Integer, ForeignKey("tf_user.id"))
+
+
 class UserLoginLog(Base):
     """用户登录日志表."""
 
