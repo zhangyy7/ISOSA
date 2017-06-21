@@ -7,8 +7,9 @@ import sqlalchemy.ext.declarative
 # 利用数据库字符串构造engine, echo为True将打印所有的sql语句, 其他数据库的链接方式可自行百度
 # engine = sqlalchemy.create_engine("mysql+pymysql://username:password@hostname/dbname", encoding="utf8", echo=True)
 engine = sqlalchemy.create_engine(
-    "mysql+pymysql://root:Go123654123?!@192.168.146.138/learn?charset=utf8", encoding="utf8", echo=False)
-
+    "mysql+pymysql://root:Go123654123?!@192.168.146.138/learn?charset=utf8",
+    encoding="utf8",
+    echo=False)
 """
 # 传统方式操作数据库
 # 利用engine创建connection,因为使用了with所以不需要close操作,这部分不是重点
@@ -47,21 +48,21 @@ BaseModel = sqlalchemy.ext.declarative.declarative_base()
 
 # 构建数据模型User
 class User(BaseModel):
-    __tablename__ = "Users"         # 表名
+    __tablename__ = "Users"  # 表名
     __table_args__ = {
-        "mysql_engine": "InnoDB",   # 表的引擎
-        "mysql_charset": "utf8",    # 表的编码格式
+        "mysql_engine": "InnoDB",  # 表的引擎
+        "mysql_charset": "utf8",  # 表的编码格式
     }
 
     # 表结构,具体更多的数据类型自行百度
-    id = sqlalchemy.Column("id", sqlalchemy.Integer,
-                           primary_key=True, autoincrement=True)
+    id = sqlalchemy.Column(
+        "id", sqlalchemy.Integer, primary_key=True, autoincrement=True)
     name = sqlalchemy.Column("name", sqlalchemy.String(50), nullable=False)
     age = sqlalchemy.Column("age", sqlalchemy.Integer, default=0)
 
     # 添加角色id外键(关联到Role.id属性)
-    role_id = sqlalchemy.Column(
-        "role_id", sqlalchemy.Integer, sqlalchemy.ForeignKey("Roles.id"))
+    role_id = sqlalchemy.Column("role_id", sqlalchemy.Integer,
+                                sqlalchemy.ForeignKey("Roles.id"))
 
     # 添加关系属性(关联到role_id外键上)
     role = sqlalchemy.orm.relationship("Role", foreign_keys="User.role_id")
@@ -72,10 +73,10 @@ class User(BaseModel):
 
 # 构建数据模型Role
 class Role(BaseModel):
-    __tablename__ = "Roles"         # 表名
+    __tablename__ = "Roles"  # 表名
     __table_args__ = {
-        "mysql_engine": "InnoDB",   # 表的引擎
-        "mysql_charset": "utf8",    # 表的编码格式
+        "mysql_engine": "InnoDB",  # 表的引擎
+        "mysql_charset": "utf8",  # 表的编码格式
     }
 
     # 表结构,具体更多的数据类型自行百度
@@ -87,9 +88,8 @@ class Role(BaseModel):
 
 
 # 利用Session对象连接数据库
-DBSessinon = sqlalchemy.orm.sessionmaker(bind=engine)   # 创建会话类
-session = DBSessinon()                                  # 创建会话对象
-
+DBSessinon = sqlalchemy.orm.sessionmaker(bind=engine)  # 创建会话类
+session = DBSessinon()  # 创建会话对象
 
 # 删除所有表
 BaseModel.metadata.drop_all(engine)
@@ -117,90 +117,82 @@ try:
 
     # 修改数据
     user.name = "Allen"
-    session.merge(user)                         # 使用merge方法,如果存在则修改,如果不存在则插入
-    session.query(User).filter(User.id == user.id).update(
-        {User.name: "Allen"})         # 使用update方法
-    session.query(User).filter(User.id == user.id).update(
-        {User.age: User.age + 1})     # 使用update方法,自增操作
+    session.merge(user)  # 使用merge方法,如果存在则修改,如果不存在则插入
+    session.query(User).filter(User.id == user.id).update({
+        User.name: "Allen"
+    })  # 使用update方法
+    session.query(User).filter(User.id == user.id).update({
+        User.age: User.age + 1
+    })  # 使用update方法,自增操作
 
     # 查询数据
-    roles = session.query(Role)                 # 返回全部结果
+    roles = session.query(Role)  # 返回全部结果
     for role in roles:
         print("Role:", role.id, role.name)
 
-    users = session.query(User)                 # 返回全部结果
+    users = session.query(User)  # 返回全部结果
     for user in users:
         print("User:", user.id, user.name, user.age, user.role_id)
 
     # 其他获取数据的方式
-    print("get(id):", session.query(User).get(1)
-          )                       # 返回结果集中id为1的项
-    print("get[1:3]:", session.query(User)[1:3]
-          )                        # 返回结果集中的第2-3项
+    print("get(id):", session.query(User).get(1))  # 返回结果集中id为1的项
+    print("get[1:3]:", session.query(User)[1:3])  # 返回结果集中的第2-3项
 
     # 其他高级查询,这里以Users表为例
-    users = session.query(User).filter(User.id > 6)                     # 条件查询
+    users = session.query(User).filter(User.id > 6)  # 条件查询
+    users = session.query(User).filter(User.id > 6).all()  # 条件查询,返回查询的全部数据
+    user = session.query(User).filter(User.id > 6).first()  # 条件查询,返回查询数据的第一项
+    users = session.query(User).filter(User.id > 6).limit(10)  # 条件查询,返回最多10条数据
     users = session.query(User).filter(
-        User.id > 6).all()               # 条件查询,返回查询的全部数据
-    user = session.query(User).filter(
-        User.id > 6).first()              # 条件查询,返回查询数据的第一项
-    users = session.query(User).filter(
-        User.id > 6).limit(10)           # 条件查询,返回最多10条数据
-    users = session.query(User).filter(
-        User.id > 6).offset(2)           # 条件查询,从第3条数据开始返回
+        User.id > 6).offset(2)  # 条件查询,从第3条数据开始返回
 
-    users = session.query(User).filter(
-        User.id > 6, User.name == "Kobe")                    # 条件查询,and操作
+    users = session.query(User).filter(User.id > 6,
+                                       User.name == "Kobe")  # 条件查询,and操作
     users = session.query(User).filter(User.id > 6).filter(
-        User.name == "Kobe")             # 条件查询,and操作
-    users = session.query(User).filter(sqlalchemy.or_(
-        User.id > 6, User.name == "Kobe"))    # 条件查询,or操作
-    users = session.query(User).filter(User.id.in_(
-        (1, 2)))                                 # 条件查询,in操作
-    users = session.query(User).filter(sqlalchemy.not_(
-        User.name))                          # 条件查询,not操作
+        User.name == "Kobe")  # 条件查询,and操作
+    users = session.query(User).filter(
+        sqlalchemy.or_(User.id > 6, User.name == "Kobe"))  # 条件查询,or操作
+    users = session.query(User).filter(User.id.in_((1, 2)))  # 条件查询,in操作
+    users = session.query(User).filter(
+        sqlalchemy.not_(User.name))  # 条件查询,not操作
 
     # 统计全部user的数量
     user_count = session.query(User.id).count()
     print("count_1:", user_count)
-    user_count = session.query(sqlalchemy.func.count(
-        User.id)).filter(User.id > 1).scalar()                     # scalar操作返回第一行数据的第一个字段
+    user_count = session.query(sqlalchemy.func.count(User.id)).filter(
+        User.id > 1).scalar()  # scalar操作返回第一行数据的第一个字段
     print("count_2:", user_count)
     # scalar操作返回第一行数据的第一个字段
     sc = session.query(sqlalchemy.func.count("*")).select_from(User).scalar()
     print("scalar:", sc)
     sc = session.query(sqlalchemy.func.count(1)).select_from(
-        User).scalar()                      # scalar操作返回第一行数据的第一个字段
+        User).scalar()  # scalar操作返回第一行数据的第一个字段
     print("scalar2:", sc)
     sc = session.query(sqlalchemy.func.count(User.id)).filter(
-        User.id > 0).scalar()              # filter() 中包含 User，因此不需要指定表
+        User.id > 0).scalar()  # filter() 中包含 User，因此不需要指定表
     print("scalar3:", sc)
     # 求和运算,运用scalar函数
     sum_test = session.query(sqlalchemy.func.sum(User.age)).scalar()
     print("sum:", sum_test)
-    session.query(sqlalchemy.func.avg(User.age)).scalar(
-    )                                   # 求均值运算,运用scalar函数
+    session.query(sqlalchemy.func.avg(User.age)).scalar()  # 求均值运算,运用scalar函数
     session.query(sqlalchemy.func.md5(User.name)).filter(
-        User.id == 1).scalar()             # 运用md5函数
+        User.id == 1).scalar()  # 运用md5函数
 
-    users = session.query(sqlalchemy.distinct(User.name)
-                          )               # 去重查询,根据name进行去重
+    users = session.query(sqlalchemy.distinct(User.name))  # 去重查询,根据name进行去重
+    users = session.query(User).order_by(User.name)  # 排序查询,正序查询
+    users = session.query(User).order_by(User.name.desc())  # 排序查询,倒序查询
     users = session.query(User).order_by(
-        User.name)                     # 排序查询,正序查询
-    users = session.query(User).order_by(
-        User.name.desc())              # 排序查询,倒序查询
-    users = session.query(User).order_by(
-        sqlalchemy.desc(User.name))    # 排序查询,倒序查询的另外一种形式
+        sqlalchemy.desc(User.name))  # 排序查询,倒序查询的另外一种形式
 
     # 只查询部分属性
     users = session.query(User.id, User.name)
-    users = session.query(User.name.label("user_name")
-                          )                 # 结果集的列取别名
+    users = session.query(User.name.label("user_name"))  # 结果集的列取别名
     for user in users:
-        print("label test:", user.user_name)                            # 这里使用别名
+        print("label test:", user.user_name)  # 这里使用别名
 
-    users = session.query(sqlalchemy.func.count(User.name).label(
-        "count"), User.age).group_by(User.age)    # 分组查询
+    users = session.query(
+        sqlalchemy.func.count(User.name).label("count"),
+        User.age).group_by(User.age)  # 分组查询
     for user in users:
         print("age:{0}, count:{1}".format(user.age, user.count))
 
