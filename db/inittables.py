@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.sql import func
 from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, sessionmaker
 from conf import settings
 
 # 初始化数据库连接
@@ -45,10 +45,7 @@ class UserInfo(Base):
     age = Column("age", Integer, nullable=False)
     role_id = Column("role_id", Integer, ForeignKey("tf_role.id"))
     password = Column(
-        "password",
-        String(128),
-        nullable=False,
-        server_default=func.md5("123456"))
+        "password", String(128), nullable=False, server_default='123456')
     status = Column("status", String(1), server_default='1')
     register_date = Column(
         "register_date", DateTime, server_default=func.now())
@@ -126,7 +123,7 @@ class ClassesStudentRef(Base):
 class CourseModular(Base):
     """课程模块表."""
 
-    __tablename__ = 'tf_curriculum_schedule'
+    __tablename__ = 'tf_course_modular'
     __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
@@ -144,7 +141,7 @@ class CurriculumSchedule(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     course_id = Column("course_id", Integer, ForeignKey("tf_courses.id"))
-    modular_id = Column(Integer, ForeignKey("tf_curriculum_shedule.id"))
+    modular_id = Column(Integer, ForeignKey("tf_course_modular.id"))
     content_summary = Column(String(128))
     sequence_number = Column(Integer)
     time_consuming = Column(Integer)
@@ -152,5 +149,80 @@ class CurriculumSchedule(Base):
     update_time = Column(DateTime, server_default=func.now())
 
 
-# 创建所有定义好的表
+class StudentLearningRecord(Base):
+    """学生上课记录表."""
+
+    __tablename__ = "tf_stu_learn_record"
+    __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    student_id = Column(Integer, ForeignKey("tf_user.id"))
+    curriculum_schedule_id = Column(Integer,
+                                    ForeignKey("tf_curriculum_schedule.id"))
+    class_time = Column(DateTime, server_default=func.now())
+
+
+class StudentBusyWork(Base):
+    """学生作业表."""
+
+    __tablename__ = "tf_student_busywork"
+    __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    learning_record_id = Column(Integer, ForeignKey("tf_stu_learn_record.id"))
+    busywork_name = Column(String(128))
+    work_content = Column(String(128))
+    score = Column(Integer)
+    update_time = Column(DateTime, server_default=func.now())
+
+
+class StudentApply(Base):
+    """学生班级申请记录表."""
+
+    __tablename__ = "tf_student_apply"
+    __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    student_id = Column(Integer, ForeignKey("tf_user.id"))
+    apply_classes_id = Column(Integer, ForeignKey("tf_classes.id"))
+    apply_time = Column(DateTime, server_default=func.now())
+    payment_flag = Column(Enum('0', '1'), server_default='0')
+
+
+class PaymentTrade(Base):
+    """缴费流水表."""
+
+    __tablename__ = "tf_payment_trade"
+    __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    apply_id = Column(Integer, ForeignKey("tf_student_apply.id"))
+    amount_receivable = Column(Integer)
+    amount_relief = Column(Integer, server_default='0')
+    amount_real = Column(Integer, server_default='0')
+    payment_time = Column(DateTime, server_default=func.now())
+    cashier_id = Column(Integer, ForeignKey("tf_user.id"))
+
+
+class Approval(Base):
+    """申请审批表."""
+
+    __tablename__ = "tf_approval"
+    __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    apply_id = Column(Integer, ForeignKey("tf_student_apply.id"))
+    apply_flag = Column(Enum('0', '1', '2'), server_default='0')
+    apply_teacher_id = Column(Integer, ForeignKey("tf_user.id"))
+    remark = Column(String(256))
+
+
+# 利用session对象连接数据库
+DBSessinon = sessionmaker(bind=engine)  # 创建会话类
+session = DBSessinon()  # 创建会话对象
+
+# 删除所有表
+Base.metadata.drop_all(engine)
+
+# 创建所有表，如果表已存在则不创建
 Base.metadata.create_all(engine)

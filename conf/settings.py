@@ -5,6 +5,7 @@
 engine = "mysql"
 
 database = {
-    "mysql": "mysql+pymysql://root:Go123654123?!@192.168.146.138/school?charset=utf8",
+    "mysql":
+    "mysql+pymysql://root:Go123654123?!@192.168.146.138/school?charset=utf8",
     "file": ""
 }
