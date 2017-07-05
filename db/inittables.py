@@ -97,8 +97,8 @@ class Classes(Base):
 
     courses = relationship('Courses', foreign_keys=[course_id, ])
     teachers = relationship("UserInfo", foreign_keys=[teacher_id, ])
-    students = relationship(
-        'ClassesStudentRef', foreign_keys="tr_classes_student_ref.students")
+    # students = relationship(
+    #     'ClassesStudentRef', foreign_keys="tr_classes_student_ref.students")
 
 
 class ClassesStudentRef(Base):
@@ -234,4 +234,5 @@ user = UserInfo(
     register_date=func.now(),
     update_user=1)
 session.add_all([role_sys, user])
-session.commit
+
+session.commit()
