@@ -44,11 +44,9 @@ class UserInfo(Base):
     sex = Column("sex", Enum('M', 'F'), server_default='M')
     age = Column("age", Integer, nullable=False)
     role_id = Column("role_id", Integer, ForeignKey("tf_role.id"))
-    password = Column(
-        "password", String(128), nullable=False, server_default='123456')
+    password = Column("password", String(128))
     status = Column("status", String(1), server_default='1')
-    register_date = Column(
-        "register_date", DateTime, server_default=func.now())
+    register_date = Column("register_date", DateTime, nullable=False)
     update_time = Column("update_time", DateTime, server_default=func.now())
     update_user = Column("update_user_id", Integer, ForeignKey("tf_user.id"))
 
@@ -226,3 +224,14 @@ Base.metadata.drop_all(engine)
 
 # 创建所有表，如果表已存在则不创建
 Base.metadata.create_all(engine)
+
+role_sys = RoleInfo(name="系统")
+user = UserInfo(
+    qq=000000000,
+    name="系统",
+    age=0,
+    role_id=1,
+    register_date=func.now(),
+    update_user=1)
+session.add_all([role_sys, user])
+session.commit
